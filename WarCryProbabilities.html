@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<head>
+<title>Warcry Probability Calculator</title>
+<style>
+.header {
+background-color: #f1f1f1;
+padding: 20px;
+text-align: center;
+font-size: 25px;
+height: 10%;
+}
+
+.column.side{
+height: 100%;
+  width: 15%;
+  float: left;
+  background-color: #ddd;
+  width: 20%;
+}
+
+.column.middle {
+  height: 100%;
+    width: 60%;
+    float: left;
+    text-align: center;
+    background-color: #eee;
+
+}
+
+.center {
+  margin: auto;
+  width: 220px;
+  height: 50%;
+  padding: 10px;
+}
+
+.footer {
+background-color: #c1c1c1;
+text-align: center;
+font-size: 25px;
+height: 10%;
+padding: 5px;
+}
+.canvas {
+background-color: #000;
+height: 300px;
+width: 300px;
+}
+.row {
+  background-color: #fff;
+  height: 60%;
+}
+
+.scenario {
+  float:left;
+}
+.unit {
+  float:left;
+  width:100px;
+  margin:5px;
+  font-size: 30px;
+  color: #FFF;
+}
+.unit.one {
+  background-color: #009;
+}
+.unit.two {
+  background-color: #090;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+</style>
+</head>
+<body>>
+<div class="header">
+  <h2>Warcry Probability Calculator</h2>
+</div>
+
+<div class="row"> <!--row-->
+<div class="column side"> <!-- side bar -->
+  <div style="padding:10px">
+<h3 style="color:blue">Unit 1</h3>
+<select onchange="updateUnitVals(1,this.selectedIndex)">
+    <option>Custom</option>
+    <option>Skaven Clanrat</option>
+    <option>Stormcast Griffhound</option>
+    <option>Khorne Bloodreaver</option>
+    <option>Orc Ardboy</option>
+    <option>Iron Legionnaire</option>
+    <option>Sigmar Dreadspear</option>
+    <option>Khorne Khorgorath</option>
+    <option>Skaven Doomflayer</option>
+    <option>Stormcast Evocator Prime</option>
+    <option>Orc Brute Boss</option>
+    <option>Iron Ogre Breacher</option>
+    <option>Sigmar Dread Knight</option>
+  </select>
+  <p>HP:</p>
+  <input type="text" id="HP1" value="10" size="2">
+  <p>Strength of Attack:</p>
+  <input type="text" id="Strength1" value="4" size="2">
+  <p id>Toughness of Defense:</p>
+  <input type="text" id="Toughness1" value="4" size="2">
+  <p>Attacks:</p>
+  <input type="text" id="Attacks1" value="3" size="2">
+  <p>Normal Damage:</p>
+  <input type="text" id="NormDMG1" value="1" size="2">
+  <p>Crit Damage:</p>
+  <input type="text" id="CritDMG1" value="4" size="2">
+</div> <!-- side bar -->
+</div>
+
+<div class="column middle">
+  <!--<canvas id="myChart" style="width:60%;max-width:600px"></canvas>-->
+  <div class="center" style="height:200px; width:400px"><canvas hidden="hidden" id="myCanvas1"></canvas></div>
+  <div class="center" style="height:200px; width:400px"><canvas hidden="hidden" id="myCanvas2"></canvas></div>
+  <div class="center">
+    <h2>Average Survival %</h2>
+    <div class="unit one" id="U1S"> </div>
+    <div class="unit two" id="U2S"> </div>
+   </div>
+ </div>
+
+<div class="column side"> <!-- side bar -->
+  <div style="padding:10px">
+  <h3 style="color:green">Unit 2</h3>
+  <select onchange="updateUnitVals(2,this.selectedIndex)">
+      <option>Custom</option>
+      <option>Skaven Clanrat</option>
+      <option>Stormcast Griffhound</option>
+      <option>Khorne Bloodreaver</option>
+      <option>Orc Ardboy</option>
+      <option>Iron Legionnaire</option>
+      <option>Sigmar Dreadspear</option>
+      <option>Khorne Khorgorath</option>
+      <option>Skaven Doomflayer</option>
+      <option>Stormcast Evocator Prime</option>
+      <option>Orc Brute Boss</option>
+      <option>Iron Ogre Breacher</option>
+      <option>Sigmar Dread Knight</option>
+    </select>
+  <p>HP:</p>
+  <input type="text" id="HP2" value="10" size="2">
+  <p>Strength of Attack:</p>
+  <input type="text" id="Strength2" value="4" size="2">
+  <p id>Toughness of Defense:</p>
+  <input type="text" id="Toughness2" value="4" size="2">
+  <p>Attacks:</p>
+  <input type="text" id="Attacks2" value="3" size="2">
+  <p>Normal Damage:</p>
+  <input type="text" id="NormDMG2" value="1" size="2">
+  <p>Crit Damage:</p>
+  <input type="text" id="CritDMG2" value="4" size="2">
+</div>
+</div> <!-- side bar -->
+</div> <!--row-->
+
+<div class="footer">
+
+  <p id="outputText"></p>
+<div class="center">
+  <h2>  <button style="font-size:30px" onclick="Calculate()">Calculate</button></h2>
+</div>
+</div>
+
+<script>
+var unitTypes = new Array();
+unitTypes[0] = {name:"Custom", HP:10,strength:4,toughness:4, attacks:3,normDMG:1,critDMG:4};
+unitTypes[1] = {name:"Skaven Clanrat", HP:8,strength:3,toughness:4, attacks:2,normDMG:1,critDMG:4};
+unitTypes[2] = {name:"Stormcast Griffhound", HP:12,strength:4,toughness:4, attacks:4,normDMG:1,critDMG:4};
+unitTypes[3] = {name:"Khorne Bloodreaver", HP:10,strength:4,toughness:3, attacks:3,normDMG:1,critDMG:3};
+unitTypes[4] = {name:"Orc Ardboy", HP:15,strength:4,toughness:4, attacks:4,normDMG:1,critDMG:4};
+unitTypes[5] = {name:"Iron Legionnaire", HP:12,strength:3,toughness:5, attacks:3,normDMG:1,critDMG:4};
+unitTypes[6] = {name:"Sigmar Dreadspear", HP:8,strength:3,toughness:4, attacks:2,normDMG:1,critDMG:4};
+unitTypes[7] = {name:"Khorne Khorgorath", HP:30,strength:5,toughness:4, attacks:3,normDMG:4,critDMG:8};
+unitTypes[8] = {name:"Skaven Doomflayer", HP:18,strength:5,toughness:4, attacks:5,normDMG:2,critDMG:4};
+unitTypes[9] = {name:"Stormcast Evocator Prime", HP:25,strength:5,toughness:5, attacks:4,normDMG:2,critDMG:5};
+unitTypes[10] = {name:"Orc Brute Boss", HP:30,strength:5,toughness:5, attacks:4,normDMG:2,critDMG:5};
+unitTypes[11] = {name:"Iron Ogre Breacher", HP:30,strength:6,toughness:5, attacks:3,normDMG:4,critDMG:8};
+unitTypes[12] = {name:"Sigmar Dread Knight", HP:25,strength:3,toughness:5, attacks:5,normDMG:2,critDMG:4};
+
+var numUnits=2;
+class Unit {
+  constructor(unitNum) {
+    var text;
+    text = "HP"+unitNum; this.HP=parseInt(document.getElementById(text).value);
+    text = "Strength"+unitNum; this.strength=parseInt(document.getElementById(text).value);
+    text = "Toughness"+unitNum; this.toughness=parseInt(document.getElementById(text).value);
+    text = "Attacks"+unitNum; this.attacks=parseInt(document.getElementById(text).value);
+    text = "NormDMG"+unitNum; this.normDMG=parseInt(document.getElementById(text).value);
+    text = "CritDMG"+unitNum; this.critDMG=parseInt(document.getElementById(text).value);
+    this.totalDMG = this.critDMG*this.attacks;
+    this.damagePerAttack = Array(this.totalDMG+1);
+    this.xDMG = Array(this.totalDMG+1);
+    for (var i=0; i < this.totalDMG+1; i++) {this.xDMG[i]=i;}
+
+  }
+  getDamagePerAttack(toughness) {
+    var i,j,k;
+    var probs = Array(this.totalDMG+1);
+    var oldProbs = Array(this.totalDMG+1);
+    var newProbs = Array(this.totalDMG+1);
+    for (i=0; i <= this.totalDMG; i++) {probs[i]=0; oldProbs[i]=0; newProbs[i]=0;}
+    if (this.strength > toughness) {probs[0] = 2/6; probs[this.normDMG] += 3/6;}
+    if (this.strength == toughness) {probs[0] = 3/6; probs[this.normDMG] += 2/6;}
+    if (this.strength < toughness) {probs[0] = 4/6; probs[this.normDMG] += 1/6;}
+    probs[this.critDMG] += 1/6;
+    for (i=0; i <= this.totalDMG; i++) {oldProbs[i]=probs[i];newProbs[i]=probs[i];}
+    for (i=2; i <= this.attacks; i++) {
+    for (j=0; j <= this.totalDMG; j++) {newProbs[j]=0;} // zero newProbs
+    for (j=0; j <= this.critDMG; j++) {
+      for (k=0; k <= this.totalDMG-j; k++) {
+        newProbs[j+k] += oldProbs[k]*probs[j];
+      }
+    }
+    for (j=0; j <= this.totalDMG; j++) {oldProbs[j]=newProbs[j];}
+  }
+  for (j=0; j <= this.totalDMG; j++) { this.damagePerAttack[j] = newProbs[j];}
+  probs = [];
+  oldProbs = [];
+  newProbs = [];
+  }
+}
+
+function updateUnitVals(ui,value) {
+  var text = "HP"+ui; document.getElementById(text).value = unitTypes[value].HP;
+  var text = "Strength"+ui; document.getElementById(text).value = unitTypes[value].strength;
+  var text = "Toughness"+ui; document.getElementById(text).value = unitTypes[value].toughness;
+  var text = "Attacks"+ui; document.getElementById(text).value = unitTypes[value].attacks;
+  var text = "NormDMG"+ui; document.getElementById(text).value = unitTypes[value].normDMG;
+  var text = "CritDMG"+ui; document.getElementById(text).value = unitTypes[value].critDMG;
+}
+
+var chart1 = new Chart("myCanvas1", {});
+var chart2 = new Chart("myCanvas2", {});
+
+function Calculate() {
+
+// populate units
+  var units = new Array(numUnits);
+   for (i=0; i < numUnits; i++) {
+     units[i] = new Unit(i+1);
+   }
+
+// hardcode in which units to attack
+  var unitToAttack = new Array(numUnits);
+  unitToAttack[0] = 1; // Unit 0 attacks Unit 1
+  unitToAttack[1] = 0; // Unit 1 attacks Unit 0
+
+// calculate damage per attack
+  for (i=0; i < numUnits; i++) {
+    units[i].getDamagePerAttack(units[unitToAttack[i]].toughness);
+  }
+
+var round;
+var probHP = Array(numUnits);
+var probDead = Array(numUnits);
+var probAlive = Array(numUnits);
+var attackOrderAll = Array(4);
+var defendOrderAll = Array(4);
+var unitWinPercent = [0,0];
+attackOrderAll[0] = [9,0,0,1,1,0,0,1,1,0,0,1,1];
+defendOrderAll[0] = [9,1,1,0,0,1,1,0,0,1,1,0,0];
+attackOrderAll[1] = [9,0,1,1,0,0,1,1,0,0,1,1,0,0];
+defendOrderAll[1] = [9,1,0,0,1,1,0,0,1,1,0,0,1,1];
+attackOrderAll[2] = [9,1,0,0,1,1,0,0,1,1,0,0,1,1];
+defendOrderAll[2] = [9,0,1,1,0,0,1,1,0,0,1,1,0,0];
+attackOrderAll[3] = [9,1,1,0,0,1,1,0,0,1,1,0,0];
+defendOrderAll[3] = [9,0,0,1,1,0,0,1,1,0,0,1,1];
+for (var scenario=1; scenario <= 4; scenario++)
+{// Scenario 1 AABBAABB
+var attackOrder = attackOrderAll[scenario-1];
+var defendOrder = defendOrderAll[scenario-1];
+totalRounds = attackOrder.length;
+var xRounds = Array(totalRounds);
+for (i=0; i < totalRounds; i++) {xRounds[i]=i;}
+
+for (i=0; i < numUnits; i++) {
+  probHP[i] = Array((units[i].HP)+1);
+  probDead[i]=Array(totalRounds);
+  probAlive[i]=Array(totalRounds);
+} // create 2D arrays
+for (i=0; i < numUnits; i++)
+{
+  for (j=0; j < (units[i].HP)+1; j++)
+  {
+    probHP[i][j]=0;
+  }
+  probHP[i][units[i].HP]=1;
+} // initialize probHP
+for (i=0; i < numUnits; i++) { for (j=0; j < totalRounds; j++) { probDead[i][j]=0; } } // initialize probDead
+
+for (round=1; round < totalRounds;round++){
+ ai = attackOrder[round]; di = defendOrder[round]; //attacker and defender index
+ //pAttackerDead = probHP[ai][0]; // probability that attacker is dead
+ dHP = units[di].HP; aDMG = units[ai].totalDMG;
+ tempHP = Array(dHP+1+aDMG+1-1); // new defender HP probability
+ for (i=0; i < dHP+aDMG+1; i++) {tempHP[i]=0;} // initialize temp HP = 0
+ for (i=0; i <= dHP; i++) {
+  for (j=0; j <= aDMG; j++)
+  { tempHP[i-j+aDMG] += probHP[di][i]*units[ai].damagePerAttack[j]; } }
+ for (i=0; i < aDMG; i++) { // sum up negative HP
+  tempHP[aDMG]+=tempHP[i]; tempHP[i]=0;
+ }
+ probDead[di][round] = probDead[di][round-1]+tempHP[aDMG]*(1-probDead[ai][round-1]-probDead[di][round-1]); // update probDead for defendOrder
+ for (i=1; i <= dHP; i++) {tempHP[aDMG+i] = tempHP[aDMG+i]/(1-tempHP[aDMG]);} // renormalize tempHP
+ tempHP[aDMG] = 0; // remove dead units
+ for (i=0; i <= dHP; i++) // do not update if attacker is dead
+{
+  probHP[di][i] = tempHP[aDMG+i]; // no update if Attacker dead OBSOLETE
+}
+probDead[ai][round] = probDead[ai][round-1];
+
+} // rounds
+
+for (i=0; i < numUnits; i++) { for (round=0; round < totalRounds; round++){probAlive[i][round]=1-probDead[i][round];}}
+
+if (scenario == 2) {
+chart1.destroy();
+chart1 = new Chart("myCanvas1", {type: "line", maintainAspectRatio:false,
+  data: { labels: xRounds, xAxisID: "Damage", yAxisID: "Probability",
+    datasets: [{ data: probAlive[0], borderColor: "blue", fill: false, lineTension: 0},{data: probAlive[1],borderColor: "green", fill: false, lineTension: 0}]},
+  options: { legend: {display: false}, scales: {y: {display: true}, x: {display: true}},
+    title: {display: true,text: "Unit 1 initiates"}}});
+  unitWinPercent[0] += 1-probDead[0][totalRounds-1];unitWinPercent[1] += 1-probDead[1][totalRounds-1];
+  }
+    if (scenario == 3) {
+    chart2.destroy();
+    chart2 = new Chart("myCanvas2", {type: "line", maintainAspectRatio:false,
+      data: { labels: xRounds, xAxisID: "Damage", yAxisID: "Probability",
+        datasets: [{ data: probAlive[0], borderColor: "blue", fill: false, lineTension: 0},{data: probAlive[1],borderColor: "green", fill: false, lineTension: 0}]},
+      options: { legend: {display: false}, scales: {y: {display: true}, x: {display: true}},
+        title: {display: true,text: "Unit 2 initiates"}}});
+        unitWinPercent[0] += 1-probDead[0][totalRounds-1];unitWinPercent[1] += 1-probDead[1][totalRounds-1];
+      }
+
+} // scenarios
+document.getElementById("U1S").innerHTML = (unitWinPercent[0]*100/2).toPrecision(2)+"%";
+document.getElementById("U2S").innerHTML = (unitWinPercent[1]*100/2).toPrecision(2)+"%";
+
+}
+
+</script>
+</body>
+</html>
